@@ -11,7 +11,6 @@ client = discord.Client()
 intents = discord.Intents.default()
 intents.members = True
 intents.messages = True
-intents.voice_states = True
 intents.integrations = True
 
 # Evento on_ready
