@@ -24,18 +24,38 @@ def pokemonHabilidades(pokemon):
     if r.status_code != 200:
         return f"No existe un Pokémon llamado {pokemon}"
     else:
-        request_a_json = json.dumps(r.json())
-        pokemon_json = json.loads(request_a_json)
+        # Request
+        pkmn_info = json.dumps(r.json())
+        pkmn_info_json = json.loads(pkmn_info)
         # Saco sus Habilidades
-        if len(pokemon_json["abilities"]) == 1:
-            habilidad = pokemon_json["abilities"][0]["ability"]["name"]
+        if len(pkmn_info_json["abilities"]) == 1:
+            habilidad = ""
+            hab_req = requests.get(pkmn_info_json["abilities"][0]["ability"]["url"])
+            hab_info = json.dumps(hab_req.json())
+            hab_json = json.loads(hab_info)
+            for x in hab_json["names"]:
+                if x["language"]["name"] == "es":
+                    habilidad = x["name"]
+                    break
+            if habilidad == "":
+                habilidad = pkmn_info_json["abilities"][0]["ability"]["name"]
         else:
             habilidad = ""
-            for x in pokemon_json["abilities"]:
-                if habilidad != "":
-                    habilidad = habilidad + ", " + x["ability"]["name"]
+            for x in pkmn_info_json["abilities"]:
+                hab_req = requests.get(x["ability"]["url"])
+                hab_info = json.dumps(hab_req.json())
+                hab_json = json.loads(hab_info)
+                habilidad_f = ""
+                for x in hab_json["names"]:
+                    if x["language"]["name"] == "es":
+                        habilidad_f = x["name"]
+                        break
+                if habilidad_f == "":
+                    habilidad_f = pkmn_info_json["abilities"][0]["ability"]["name"]
+                if habilidad == "":
+                    habilidad = habilidad_f
                 else:
-                    habilidad = x["ability"]["name"]
+                    habilidad = habilidad + ", " + habilidad_f
         return habilidad
 
 def pokemonTipo(pokemon):
@@ -44,19 +64,45 @@ def pokemonTipo(pokemon):
     if r.status_code != 200:
         return f"No existe un Pokémon llamado {pokemon}"
     else:
-        request_a_json = json.dumps(r.json())
-        pokemon_json = json.loads(request_a_json)
+        pkmn_info = json.dumps(r.json())
+        pkmn_info_json = json.loads(pkmn_info)
         # Saco sus Tipos
-        if len(pokemon_json["types"]) == 1:
-            tipo = pokemon_json["types"][0]["type"]["name"]
+        if len(pkmn_info_json["types"]) == 1:
+            tipo = ""
+            tipo_req = requests.get(pkmn_info_json["types"][0]["type"]["url"])
+            tipo_info = json.dumps(tipo_req.json())
+            tipo_json = json.loads(tipo_info)
+            for x in tipo_json["names"]:
+                if x["language"]["name"] == "es":
+                    tipo = x["name"]
+                    break
+            if tipo == "":
+                tipo = pkmn_info_json["types"][0]["type"]["name"]
         else:
             tipo = ""
-            for x in pokemon_json["types"]:
-                if tipo != "":
-                    tipo = tipo + ", " + x["type"]["name"]
+            for x in pkmn_info_json["types"]:
+                tipo_req = requests.get(x["type"]["url"])
+                tipo_info = json.dumps(tipo_req.json())
+                tipo_json = json.loads(tipo_info)
+                tipo_f = ""
+                for x in tipo_json["names"]:
+                    if x["language"]["name"] == "es":
+                        tipo_f = x["name"]
+                        break
+                if tipo_f == "":
+                    tipo_f = tipo_json["types"][x]["type"]["name"]
+                if tipo == "":
+                    tipo = tipo_f
                 else:
-                    tipo = x["type"]["name"]
+                    tipo = tipo + ", " + tipo_f
         return tipo
+
+'''def menu():
+    id = input("Di un pokemon: ")
+    print(pokemonTipo(id))
+    menu()
+
+menu()'''
 
 def pokemonInfo(pokemon):
     # Pokémon & Pokedex
@@ -130,20 +176,34 @@ def pokemonCriar(id):
         request_a_json = json.dumps(r.json())
         pokemon_json = json.loads(request_a_json)
         # Saco su Info
-        #egg_groups
-        #gender_rate
-        #growth_rate
-        #hatch_counter
     # Saco sus egg_groups
         if len(pokemon_json["egg_groups"]) == 1:
-            egg_group = pokemon_json["egg_groups"][0]["name"]
+            egg_group = ""
+            eg_req = requests.get(pokemon_json["egg_groups"][0]["url"])
+            eg_info = json.dumps(eg_req.json())
+            eg_json = json.loads(eg_info)
+            for x in eg_json["names"]:
+                if x["language"]["name"] == "es":
+                    egg_group = x["name"]
+                    break
+            if egg_group == "":
+                egg_group = pokemon_json["egg_groups"][0]["name"]
         else:
             egg_group = ""
             for x in pokemon_json["egg_groups"]:
+                eg_req = requests.get(x["url"])
+                eg_info = json.dumps(eg_req.json())
+                eg_json = json.loads(eg_info)
+                for y in eg_json["names"]:
+                    if y["language"]["name"] == "es":
+                        egg_group_f = y["name"]
+                        break
+                if egg_group_f == "":
+                    egg_group_f = pokemon_json["egg_groups"][0]["name"]
                 if egg_group != "":
-                    egg_group = egg_group + ", " + x["name"]
+                    egg_group = egg_group + ", " + egg_group_f
                 else:
-                    egg_group = x["name"]
+                    egg_group = egg_group_f
     # Saco su gender_rate
         if pokemon_json["gender_rate"] == 0 or pokemon_json["gender_rate"] == 1:
             rate_macho = "100%"
@@ -184,26 +244,87 @@ def pokemonInfo2(id):
     # Saco la info
         base_happiness = pokemon_json["base_happiness"]
         capture_rate = pokemon_json["capture_rate"]
-        # Tipo Español
+    # Tipo Español
+        tipo = ""
         for x in pokemon_json["genera"]:
             if x["language"]["name"] == "es":
                 tipo = x["genus"]
                 break
-        # Tipo Inglés
-        for x in pokemon_json["genera"]:
-            if x["language"]["name"] == "en":
-                tipo = x["genus"]
-                break
-        # Generacion
+    # Tipo Inglés
+        if tipo == "":
+            for x in pokemon_json["genera"]:
+                if x["language"]["name"] == "en":
+                    tipo = x["genus"]
+                    break
+    # Generacion
         generation = pokemon_json["generation"]["name"].upper().replace("GENERATION-", "")
+    # Habitat
         if pokemon_json["habitat"] == None:
             habitat = "Ninguno"
         else:
-            habitat = pokemon_json["habitat"]["name"]
-        forma = pokemon_json["shape"]["name"]
+            habitat = ""
+            r_hab = requests.get(pokemon_json["habitat"]["url"])
+            hab_req = json.dumps(r_hab.json())
+            hab_json = json.loads(hab_req)
+            for x in hab_json["names"]:
+                if x["language"]["name"] == "es":
+                    habitat = x["name"]
+                    break
+            if habitat == "":
+                habitat = pokemon_json["habitat"]["name"]
+    # Forma
+        forma = ""
+        r_form = requests.get(pokemon_json["shape"]["url"])
+        form_req = json.dumps(r_form.json())
+        form_json = json.loads(form_req)
+        for x in form_json["names"]:
+            if x["language"]["name"] == "es":
+                forma = x["name"]
+                break
+        if forma == "":
+            forma = pokemon_json["shape"]["name"]
+    # Return
         return f"""`Felicidad Base`: {base_happiness}
         `Ratio Captura`: {capture_rate}
         `Tipo`: {tipo}
         `Generación`: {generation}
         `Habitat`: {habitat}
         `Forma`: {forma}"""
+
+def color_por_tipo(tipo):
+    if tipo.startswith("steel"):
+        return 0xAFACBB
+    if tipo.startswith("water"):
+        return 0x3A97EC
+    if tipo.startswith("bug"):
+        return 0xAAB73C
+    if tipo.startswith("dragon"):
+        return 0x7B67D2
+    if tipo.startswith("electric"):
+        return 0xFFDF80
+    if tipo.startswith("ghost"):
+        return 0x6B6899
+    if tipo.startswith("fire"):
+        return 0xF74926
+    if tipo.startswith("fairy"):
+        return 0xFEACFF
+    if tipo.startswith("ice"):
+        return 0x85D7F0
+    if tipo.startswith("fighting"):
+        return 0xB9594E
+    if tipo.startswith("normal"):
+        return 0xC1BBB7
+    if tipo.startswith("grass"):
+        return 0x7FC862
+    if tipo.startswith("psychic"):
+        return 0xDE6590
+    if tipo.startswith("rock"):
+        return 0xBBAA69
+    if tipo.startswith("dark"):
+        return 0x69574B
+    if tipo.startswith("ground"):
+        return 0xD9BC58
+    if tipo.startswith("poison"):
+        return 0xAA5E9C
+    if tipo.startswith("flying"):
+        return 0x7298E0
