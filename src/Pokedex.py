@@ -97,13 +97,6 @@ def pokemonTipo(pokemon):
                     tipo = tipo + ", " + tipo_f
         return tipo
 
-'''def menu():
-    id = input("Di un pokemon: ")
-    print(pokemonTipo(id))
-    menu()
-
-menu()'''
-
 def pokemonInfo(pokemon):
     # Pokémon & Pokedex
     r = requests.get(f"https://pokeapi.co/api/v2/pokemon/{pokemon}")
@@ -328,3 +321,103 @@ def color_por_tipo(tipo):
         return 0xAA5E9C
     if tipo.startswith("flying"):
         return 0x7298E0
+
+def cadenaDeEvoluciones(id):
+    # Pokémon & Pokedex
+    r = requests.get(f"https://pokeapi.co/api/v2/pokemon-species/{id}")
+    if r.status_code != 200:
+        return f"No existe un Pokémon con la ID {id}"
+    else:
+        request_a_json = json.dumps(r.json())
+        pokemon_json = json.loads(request_a_json)
+
+        r = requests.get(pokemon_json["evolution_chain"]["url"])
+        request_a_json = json.dumps(r.json())
+        pokemon_json = json.loads(request_a_json)
+        id_ev = pokemon_json["id"]
+        evo0 = pokemon_json["chain"]["species"]["name"]
+        if len(pokemon_json["chain"]["evolves_to"]) != 0:
+            evo1 = pokemon_json["chain"]["evolves_to"][0]["species"]["name"]
+            evo1_trigger = pokemon_json["chain"]["evolves_to"][0]["evolution_details"][0]["trigger"]["name"]
+            evo1_details = ""
+            for x in pokemon_json["chain"]["evolves_to"][0]["evolution_details"][0]:
+                i = pokemon_json["chain"]["evolves_to"][0]["evolution_details"][0][x]
+                if i != None and i != False and i != "" and x != "trigger":
+                    if evo1_details == "":
+                        i = pokemon_json["chain"]["evolves_to"][0]["evolution_details"][0][x]
+                        if x != "held_item" and x !="item" and x != "known_move" and x != "known_move_type" and x != "party_species" and x != "party_type":
+                            evo1_details = f"{x}: {i}"
+                        else:
+                            i = pokemon_json["chain"]["evolves_to"][0]["evolution_details"][0][x]
+                            evo1_details = f"{x}: {i}"
+                    else:
+                        i = pokemon_json["chain"]["evolves_to"][0]["evolution_details"][0][x]
+                        if x != "held_item" and x !="item" and x != "known_move" and x != "known_move_type" and x != "party_species" and x != "party_type":
+                            evo1_details = f"{evo1_details}\n  {x}: {i}"
+                        else:
+                            i = pokemon_json["chain"]["evolves_to"][0]["evolution_details"][0][x]
+                            evo1_details = f"{evo1_details}\n  {x}: {i}"
+        # Traducciones
+            evo1_details = evo1_details.replace("gender", "Género")
+            evo1_details = evo1_details.replace("held_item", "Objeto Equipado")
+            evo1_details = evo1_details.replace("item", "Objeto")
+            evo1_details = evo1_details.replace("known_move", "Movimiento")
+            evo1_details = evo1_details.replace("known_move_type", "Tipo de Movimiento")
+            evo1_details = evo1_details.replace("location", "Ubicación")
+            evo1_details = evo1_details.replace("min_affection", "Amistad")
+            evo1_details = evo1_details.replace("min_beauty", "Belleza")
+            evo1_details = evo1_details.replace("min_happiness", "Felicidad")
+            evo1_details = evo1_details.replace("min_level", "Nivel")
+            evo1_details = evo1_details.replace("needs_overworld_rain", "Necesita lluvia")
+            evo1_details = evo1_details.replace("party_species", "Pokémon en Equipo")
+            evo1_details = evo1_details.replace("party_type", "Tipo en Equipo")
+            evo1_details = evo1_details.replace("relative_physical_stats", "Stats relativas")
+            evo1_details = evo1_details.replace("time_of_day", "Hora")
+            evo1_details = evo1_details.replace("trade_species", "Intercambio")
+        # Check otra evo
+            if len(pokemon_json["chain"]["evolves_to"][0]["evolves_to"]) != 0:
+                evo2 = pokemon_json["chain"]["evolves_to"][0]["evolves_to"][0]["species"]["name"]
+                evo2_trigger = pokemon_json["chain"]["evolves_to"][0]["evolves_to"][0]["evolution_details"][0]["trigger"]["name"]
+                evo2_details = ""
+                for x in pokemon_json["chain"]["evolves_to"][0]["evolves_to"][0]["evolution_details"][0]:
+                    i = pokemon_json["chain"]["evolves_to"][0]["evolves_to"][0]["evolution_details"][0][x]
+                    if i != None and i != False and i != "" and x != "trigger":
+                        if evo2_details == "":
+                            i = pokemon_json["chain"]["evolves_to"][0]["evolves_to"][0]["evolution_details"][0][x]
+                            if x != "held_item" and x !="item" and x != "known_move" and x != "known_move_type" and x != "party_species" and x != "party_type":
+                                evo2_details = f"{x}: {i}"
+                            else:
+                                i = pokemon_json["chain"]["evolves_to"][0]["evolves_to"][0]["evolution_details"][0][x]["name"]
+                                evo2_details = f"{x}: {i}"
+                        else:
+                            i = pokemon_json["chain"]["evolves_to"][0]["evolves_to"][0]["evolution_details"][0][x]
+                            if x != "held_item" and x !="item" and x != "known_move" and x != "known_move_type" and x != "party_species" and x != "party_type":
+                                evo2_details = f"{evo2_details}\n  {x}: {i}"
+                            else:
+                                i = pokemon_json["chain"]["evolves_to"][0]["evolves_to"][0]["evolution_details"][0][x]["name"]
+                                evo2_details = f"{evo2_details}\n  {x}: {i}"
+            # Traducciones
+                evo2_details = evo2_details.replace("gender", "Género")
+                evo2_details = evo2_details.replace("held_item", "Objeto Equipado")
+                evo2_details = evo2_details.replace("item", "Objeto")
+                evo2_details = evo2_details.replace("known_move", "Movimiento")
+                evo2_details = evo2_details.replace("known_move_type", "Tipo de Movimiento")
+                evo2_details = evo2_details.replace("location", "Ubicación")
+                evo2_details = evo2_details.replace("min_affection", "Amistad")
+                evo2_details = evo2_details.replace("min_beauty", "Belleza")
+                evo2_details = evo2_details.replace("min_happiness", "Felicidad")
+                evo2_details = evo2_details.replace("min_level", "Nivel")
+                evo2_details = evo2_details.replace("needs_overworld_rain", "Necesita lluvia")
+                evo2_details = evo2_details.replace("party_species", "Pokémon en Equipo")
+                evo2_details = evo2_details.replace("party_type", "Tipo en Equipo")
+                evo2_details = evo2_details.replace("relative_physical_stats", "Stats relativas")
+                evo2_details = evo2_details.replace("time_of_day", "Hora")
+                evo2_details = evo2_details.replace("trade_species", "Intercambio")
+            # returns
+                evo1_details = f"{evo1_details}\nTrigger: {evo1_trigger}"
+                evo2_details = f"{evo2_details}\nTrigger: {evo2_trigger}"
+                return [evo0, evo1, evo1_details, evo2, evo2_details]
+            else:
+                return [evo0, evo1, evo1_details]
+        else:
+            return "No posee una cadena evolutiva"
