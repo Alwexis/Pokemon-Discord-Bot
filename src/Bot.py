@@ -65,7 +65,26 @@ async def on_message(message):
                     embed.add_field(name="Información", value=info, inline=False)
                 if display_crianza == True:
                     embed.add_field(name="Crianza", value=crianza, inline=False)
+                evoluciones = cadenaDeEvoluciones(pokedex)
+                if evoluciones != "No posee una cadena evolutiva":
+                    embed.add_field(name="Cadena Evolutiva:", value=f"Cadena evolutiva del Pokémon `{pokemon}`", inline=False)
+                    embed.add_field(name=evoluciones[0], value=f"No hay información sobre una pre-evolución.\n\n[Wiki](https://www.pokemon.com/el/pokedex/{evoluciones[0]})", inline=True)
+                    if len(evoluciones) > 2:
+                        embed.add_field(name=evoluciones[1], value=f"{evoluciones[2]}\n\n[Wiki](https://www.pokemon.com/el/pokedex/{evoluciones[1]})")
+                        if len(evoluciones) > 4:
+                            embed.add_field(name=evoluciones[3], value=f"{evoluciones[4]}\n\n[Wiki](https://www.pokemon.com/el/pokedex/{evoluciones[3]})")
                 embed.set_footer(text="Pokédex by Alexis", icon_url="https://images.wikidexcdn.net/mwuploads/wikidex/2/2e/latest/20171012163310/RotomDex_USUL.png")
                 await message.reply(embed=embed, mention_author=False)
+    # Items Command
+    
+    # Berries Command
+
+    # TMs and MOs Command
+
+    # Breeding Info command
+
+    # Type Chart
+
+    # Who's that Pokémon game
 
 client.run('TOKEN')
