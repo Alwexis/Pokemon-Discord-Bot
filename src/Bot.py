@@ -1,10 +1,8 @@
 # Imports
+import Pokedex
 import discord
 import requests
 import json
-import random
-
-from Pokedex import *
 
 # Discord & Intents
 client = discord.Client()
@@ -26,20 +24,10 @@ async def on_message(message):
     if message.content.startswith(';pokedex'):
         # Pokémon & Pokedex
         if len(message.content.split(" ")) <= 1:
-            await message.reply("Por favor menciona un Pokémon válido.\n__`Parámetros`__:\n    `-i` = Información Extendida del Pokémon\n    `-c` = Información de Crianza.",
+            await message.reply("Por favor menciona un Pokémon válido.",
             mention_author=False)
         else:
             pokemon = message.content.lower().replace(";pokedex ", "")
-            if "-c" in pokemon:
-                pokemon = pokemon.replace(" -c", "")
-                display_crianza = True
-            else:
-                display_crianza = False
-            if "-i" in pokemon:
-                pokemon = pokemon.replace(" -i", "")
-                display_info = True
-            else:
-                display_info = False
             if " " in pokemon:
                 pokemon = pokemon.replace(" ", "-")
             if "'" in pokemon:
@@ -50,22 +38,20 @@ async def on_message(message):
             else:
                 request_a_json = json.dumps(r.json())
                 pokemon_json = json.loads(request_a_json)
-                stats = pokemonStats(pokemon)
-                info = pokemonInfo(pokemon)
+                stats = Pokedex.getStats(pokemon)
+                info = Pokedex.getInfo(pokemon)
                 pokedex = pokemon_json["id"]
-                color = color_por_tipo(pokemon_json["types"][0]["type"]["name"])
-                desc = pokemonDesc(pokedex)
-                crianza = pokemonCriar(pokedex)
+                color = Pokedex.getColor(pokemon_json["types"][0]["type"]["name"])
+                desc = Pokedex.getDesc(pokedex)
+                crianza = Pokedex.getCrianza(pokedex)
             # Embeds
                 embed = discord.Embed(title=f"Pokémon {pokemon} ({pokedex})", url=f"https://www.pokemon.com/el/pokedex/{pokemon}", description=desc, color=color)
                 embed.set_author(name=message.author.display_name, url="", icon_url=message.author.avatar_url)
                 embed.set_thumbnail(url=pokemon_json["sprites"]["other"]["official-artwork"]["front_default"])
-                embed.add_field(name="Estadísticas", value=stats, inline=False)
-                if display_info == True:
-                    embed.add_field(name="Información", value=info, inline=False)
-                if display_crianza == True:
-                    embed.add_field(name="Crianza", value=crianza, inline=False)
-                evoluciones = cadenaDeEvoluciones(pokedex)
+                embed.add_field(name="Información", value=info, inline=True)
+                embed.add_field(name="Estadísticas", value=stats, inline=True)
+                embed.add_field(name="Crianza", value=crianza, inline=True)
+                evoluciones = Pokedex.getCadenaEvolucion(pokedex)
                 if evoluciones != "No posee una cadena evolutiva":
                     embed.add_field(name="Cadena Evolutiva:", value=f"Cadena evolutiva del Pokémon `{pokemon}`", inline=False)
                     embed.add_field(name=evoluciones[0], value=f"No hay información sobre una pre-evolución.\n\n[Wiki](https://www.pokemon.com/el/pokedex/{evoluciones[0]})", inline=True)
